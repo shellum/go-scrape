@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"regexp"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/go-sql-driver/mysql"
 )
 
 func scrapeWeather() {
@@ -27,6 +30,30 @@ func scrapeWeather() {
 	})
 }
 
+func persistWeather(channel string, low int, high int, weather string, daysOut int) {
+	cfg := mysql.Config{
+		User:   os.Getenv("DB_USER"),
+		Passwd: os.Getenv("DB_PASS"),
+		Net:    "tcp",
+		Addr:   os.Getenv("DB_ADDR"),
+		DBName: os.Getenv("DB_NAME"),
+	}
+	db, err := sql.Open("mysql", cfg.FormatDSN())
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+	}
+	defer db.Close()
+
+	stmtIns, err := db.Prepare("INSERT INTO weather (low, high, weather, channel, time, days_out) VALUES( ?, ?, ?, ?, now(), ?)")
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
+	}
+	stmtIns.Exec(low, high, weather, channel, daysOut)
+	defer stmtIns.Close()
+}
+
 func main() {
 	scrapeWeather()
+	// Test persistence
+	persistWeather("weather.com", 50, 70, "sunny", 0)
 }
