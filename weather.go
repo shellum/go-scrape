@@ -11,26 +11,44 @@ import (
 	"github.com/go-sql-driver/mysql"
 )
 
-func scrapeWeather() {
+type Weather struct {
+	High    string
+	Low     string
+	Weather string
+	Channel string
+	DaysOut int
+}
+
+const FORECAST_DAYS = 14
+
+func scrapeWeather() [FORECAST_DAYS]Weather {
 	res, _ := http.Get("https://weather.com/weather/tenday/l/7396101a49100eaa70080ede34244e1a9ae8e2a237da460c85e6472f1c8ed113")
 	defer res.Body.Close()
 	doc, _ := goquery.NewDocumentFromReader(res.Body)
 	numericReg, _ := regexp.Compile("[^0-9]")
 	high, low := "", ""
-	doc.Find("summary > div > div[data-testid='DetailsSummary'] div[data-testid='detailsTemperature'] span[data-testid='TemperatureValue']").Each(func(i int, s *goquery.Selection) {
-		temperatureText := s.Text()
+	var weatherData [FORECAST_DAYS]Weather
+	tempSelection := doc.Find("summary > div > div[data-testid='DetailsSummary'] div[data-testid='detailsTemperature'] span[data-testid='TemperatureValue']")
+	weatherSelection := doc.Find("div[data-testid='wxIcon'] span")
+	for daysOut := 0; daysOut < tempSelection.Length(); daysOut++ {
+		tempHtmlNode := tempSelection.Eq(daysOut)
+		temperatureText := tempHtmlNode.Text()
 		temperatureNumeric := numericReg.ReplaceAllString(temperatureText, "")
+		weatherHtmlNode := weatherSelection.Eq((daysOut + 1) / 2)
+		weatherText := weatherHtmlNode.Text()
 		if high == "" {
 			high = temperatureNumeric
 		} else {
 			low = temperatureNumeric
-			fmt.Printf("High: %s, Low: %s\n", high, low)
+			weatherData[daysOut/2] = Weather{High: high, Low: low, Weather: weatherText, Channel: "weather.com", DaysOut: daysOut/2 + 1}
 			high, low = "", ""
 		}
-	})
+	}
+	return weatherData
 }
 
-func persistWeather(channel string, low int, high int, weather string, daysOut int) {
+// DB persistence for now
+func persistWeather(weatherData [FORECAST_DAYS]Weather) {
 	cfg := mysql.Config{
 		User:   os.Getenv("DB_USER"),
 		Passwd: os.Getenv("DB_PASS"),
@@ -45,15 +63,19 @@ func persistWeather(channel string, low int, high int, weather string, daysOut i
 	defer db.Close()
 
 	stmtIns, err := db.Prepare("INSERT INTO weather (low, high, weather, channel, time, days_out) VALUES( ?, ?, ?, ?, now(), ?)")
+	defer stmtIns.Close()
+
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
 	}
-	stmtIns.Exec(low, high, weather, channel, daysOut)
-	defer stmtIns.Close()
+
+	for _, weather := range weatherData {
+		stmtIns.Exec(weather.Low, weather.High, weather.Weather, weather.Channel, weather.DaysOut)
+	}
 }
 
 func main() {
-	scrapeWeather()
-	// Test persistence
-	persistWeather("weather.com", 50, 70, "sunny", 0)
+	fmt.Printf("Scraping from weather.com")
+	weatherData := scrapeWeather()
+	persistWeather(weatherData)
 }
