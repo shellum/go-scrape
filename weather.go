@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"time"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/go-sql-driver/mysql"
@@ -74,8 +75,18 @@ func persistWeather(weatherData [FORECAST_DAYS]Weather) {
 	}
 }
 
-func main() {
+func gatherAndPersist() {
 	fmt.Printf("Scraping from weather.com")
 	weatherData := scrapeWeather()
 	persistWeather(weatherData)
+}
+
+func main() {
+	fmt.Printf("Starting scraper...")
+	gatherAndPersist()
+
+	ticker := time.NewTicker(24 * time.Hour)
+	for range ticker.C {
+		gatherAndPersist()
+	}
 }
