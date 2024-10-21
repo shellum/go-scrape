@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -36,7 +37,17 @@ func scrapeWeather() [FORECAST_DAYS]Weather {
 		temperatureText := tempHtmlNode.Text()
 		temperatureNumeric := numericReg.ReplaceAllString(temperatureText, "")
 		weatherHtmlNode := weatherSelection.Eq((daysOut + 1) / 2)
-		weatherText := weatherHtmlNode.Text()
+		weatherText := strings.ToLower(weatherHtmlNode.Text())
+		// TODO: convert weatherText to one of: Rain, Clouds, Snow, Sun
+		if strings.Contains(weatherText, "rain") {
+			weatherText = "Rain"
+		} else if strings.Contains(weatherText, "cloud") {
+			weatherText = "Clouds"
+		} else if strings.Contains(weatherText, "snow") {
+			weatherText = "Snow"
+		} else if strings.Contains(weatherText, "sun") {
+			weatherText = "Sun"
+		}
 		if high == "" {
 			high = temperatureNumeric
 		} else {
@@ -57,6 +68,7 @@ func persistWeather(weatherData [FORECAST_DAYS]Weather) {
 		Addr:   os.Getenv("DB_ADDR"),
 		DBName: os.Getenv("DB_NAME"),
 	}
+	fmt.Printf("User: %s, Pass: %s, Addr: %s, DBName: %s", cfg.User, cfg.Passwd, cfg.Addr, cfg.DBName)
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		fmt.Printf("Error: %s", err.Error())
