@@ -29,8 +29,6 @@ jobs:
           cat argocd/go-scrape/go-scrape-deployment.yaml | sed 's/go-scrape:$current_version/go-scrape:$next_version/g' > tmp.ynl
           mv tmp.ynl argocd/go-scrape/go-scrape-deployment.yaml
 
-      - name: Stage modified file
-
       - name: Commit changes
         run: |
           git add argocd/go-scrape/go-scrape-deployment.yaml
