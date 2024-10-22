@@ -36,8 +36,9 @@ jobs:
           cd argocd
           git config --global user.email "i.am.a.bot"
           git config --global user.name "CD Action"
-          git add argocd/go-scrape/go-scrape-deployment.yaml
+          git add go-scrape/go-scrape-deployment.yaml
           git commit -m "Bump go-scrape version to $next_version"
+          git push origin main
 
       - name: Push changes
         run: git push origin main
