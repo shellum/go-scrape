@@ -1,0 +1,40 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  clone-modify-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout current repo
+        uses: actions/checkout@v3
+
+      - name: Clone argo repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ secrets.TARGET_REPO }}
+          token: ${{ secrets.TARGET_REPO_TOKEN }}
+
+      - name: Get version
+        run: |
+          current_version=$(cat argocd/go-scrape/go-scrape-deployment.yaml | grep image | awk -F: '{print $2}')
+          echo "Current version: $current_version"
+          next_version=$(expr $number + 1)
+
+      - name: Modify file
+        run: |
+          cat argocd/go-scrape/go-scrape-deployment.yaml | sed 's/go-scrape:$current_version/go-scrape:$next_version/g' > tmp.ynl
+          mv tmp.ynl argocd/go-scrape/go-scrape-deployment.yaml
+
+      - name: Stage modified file
+
+      - name: Commit changes
+        run: |
+          git add argocd/go-scrape/go-scrape-deployment.yaml
+          git commit -m "Bump go-scrape version to $next_version"
+
+      - name: Push changes
+        run: git push origin main
