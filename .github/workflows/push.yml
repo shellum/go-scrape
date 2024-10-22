@@ -42,6 +42,7 @@ jobs:
           git config --global user.name "CD Action"
           git add go-scrape/go-scrape-deployment.yaml
           git commit -m "Bump go-scrape version to $next_version"
+          git remote set-url origin "https://x-access-token:${{ secrets.TARGET_REPO_TOKEN }}@github.com/shellum/argocd"
           git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
