@@ -21,18 +21,19 @@ jobs:
 
       - name: Get version
         run: |
-          ls
           current_version=$(cat argocd/go-scrape/go-scrape-deployment.yaml | grep image | awk -F: '{print $3}' | awk -F. '{print $NF}')
           echo "Current version: $current_version"
           next_version=$(expr $number + 1)
 
       - name: Modify file
         run: |
-          cat argocd/go-scrape/go-scrape-deployment.yaml | sed 's/go-scrape:$current_version/go-scrape:$next_version/g' > tmp.ynl
-          mv tmp.ynl argocd/go-scrape/go-scrape-deployment.yaml
+          cat argocd/go-scrape/go-scrape-deployment.yaml | sed 's/go-scrape:$current_version/go-scrape:$next_version/g' > tmp.yml
+          mv tmp.yml argocd/go-scrape/go-scrape-deployment.yaml
+          cat argocd/go-scrape/go-scrape-deployment.yaml
 
       - name: Commit changes
         run: |
+          cd argocd
           git config --global user.email "i.am.a.bot"
           git config --global user.name "CD Action"
           git add argocd/go-scrape/go-scrape-deployment.yaml
