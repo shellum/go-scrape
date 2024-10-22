@@ -27,7 +27,7 @@ jobs:
 
       - name: Modify file
         run: |
-          cat argocd/go-scrape/go-scrape-deployment.yaml | sed 's/go-scrape:$current_version/go-scrape:$next_version/g' > tmp.yml
+          cat argocd/go-scrape/go-scrape-deployment.yaml | sed -E "s/:([0-9]+\.[0-9]+\.)[0-9]+/\1$next_version/g" > tmp.yml
           mv tmp.yml argocd/go-scrape/go-scrape-deployment.yaml
           cat argocd/go-scrape/go-scrape-deployment.yaml
 
