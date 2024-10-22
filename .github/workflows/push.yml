@@ -17,6 +17,7 @@ jobs:
         with:
           repository: ${{ secrets.TARGET_REPO }}
           token: ${{ secrets.TARGET_REPO_TOKEN }}
+          path: argocd
 
       - name: Get version
         run: |
