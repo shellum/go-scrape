@@ -7,6 +7,8 @@ on:
 jobs:
   clone-modify-commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout current repo
