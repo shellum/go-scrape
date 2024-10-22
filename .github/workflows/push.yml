@@ -20,6 +20,7 @@ jobs:
 
       - name: Get version
         run: |
+          ls
           current_version=$(cat argocd/go-scrape/go-scrape-deployment.yaml | grep image | awk -F: '{print $2}')
           echo "Current version: $current_version"
           next_version=$(expr $number + 1)
