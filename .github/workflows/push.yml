@@ -10,10 +10,10 @@ jobs:
 
     steps:
       - name: Checkout current repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Clone argo repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ secrets.TARGET_REPO }}
           token: ${{ secrets.TARGET_REPO_TOKEN }}
