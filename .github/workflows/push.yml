@@ -13,14 +13,14 @@ jobs:
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v4
-        # with:
-        #   token: ${{ secrets.TARGET_REPO_TOKEN }}
+        with:
+          token: ${{ secrets.TARGET_REPO_TOKEN }}
 
       - name: Clone argo repo
         uses: actions/checkout@v4
         with:
           repository: ${{ secrets.TARGET_REPO }}
-          # token: ${{ secrets.TARGET_REPO_TOKEN }}
+          token: ${{ secrets.TARGET_REPO_TOKEN }}
           path: argocd
 
       - name: Get version
@@ -43,8 +43,8 @@ jobs:
           git add go-scrape/go-scrape-deployment.yaml
           git commit -m "Bump go-scrape version to $next_version"
           git push origin main
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.TARGET_REPO_TOKEN }}
 
       - name: Push changes
         run: git push origin main
