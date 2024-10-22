@@ -38,8 +38,9 @@ func scrapeWeather() [FORECAST_DAYS]Weather {
 		temperatureNumeric := numericReg.ReplaceAllString(temperatureText, "")
 		weatherHtmlNode := weatherSelection.Eq((daysOut + 1) / 2)
 		weatherText := strings.ToLower(weatherHtmlNode.Text())
-		// TODO: convert weatherText to one of: Rain, Clouds, Snow, Sun
 		if strings.Contains(weatherText, "rain") {
+			weatherText = "Rain"
+		} else if strings.Contains(weatherText, "shower") {
 			weatherText = "Rain"
 		} else if strings.Contains(weatherText, "cloud") {
 			weatherText = "Clouds"

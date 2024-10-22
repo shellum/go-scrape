@@ -5,6 +5,5 @@ then
     echo "This builds and pushes an updated image to a docker repo"
     exit 1
 fi
-ng build
 docker build . -t $1/go-scrape:$2
 docker push $1/go-scrape:$2
